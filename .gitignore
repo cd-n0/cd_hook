@@ -1,0 +1,8 @@
+# Objects
+obj/
+
+# Binary
+target.out
+
+# Generated clangd file
+compile_flags.txt
