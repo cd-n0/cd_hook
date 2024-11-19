@@ -50,13 +50,13 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.c $(INCLUDES)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Compile the test executables
-$(TESTS): $(TESTSRCS)
-	$(CC) $(CFLAGS) -o $@ $@.c $(filter-out $(MAINOBJ), $(OBJS)) $(LDLIBS)
+$(TESTS): $(TESTSRCS) $(OBJS)
+	$(CC) $(CFLAGS) -o $@.out $@.c $(filter-out $(MAINOBJ), $(OBJS)) $(LDLIBS)
 
 # Run the tests
 test: $(TESTS) $(TESTSRCS)
 	for test in $(TESTS); do \
-		./$$test && \
+		./$$test.out && \
 		echo "TEST $$test OK" || \
 		echo "TEST $$test FAIL"; \
 	done
