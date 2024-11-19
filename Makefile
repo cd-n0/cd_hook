@@ -26,6 +26,7 @@ INCDIR = inc
 
 SRCS = $(wildcard $(SRCDIR)/*.c)
 OBJS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
+MAINOBJ = $(OBJDIR)/main.o
 INCLUDES = $(wildcard $(INCDIR)/*.h)
 
 TARGET=cd_hook.out
@@ -50,7 +51,7 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.c $(INCLUDES)
 
 # Compile the test executables
 $(TESTS): $(TESTSRCS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $@.c $(LDLIBS)
+	$(CC) $(CFLAGS) -o $@ $@.c $(filter-out $(MAINOBJ), $(OBJS)) $(LDLIBS)
 
 # Run the tests
 test: $(TESTS) $(TESTSRCS)
