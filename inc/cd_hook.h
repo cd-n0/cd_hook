@@ -39,9 +39,18 @@ x86_64:
 #define JMP_ACC 0xff, 0xe0
 
 typedef enum cd_hook_type_e{
-    HOOK_UNDEFINED = 0,
-    HOOK_INLINE,
+    CD_HOOK_UNDEFINED = 0,
+    CD_HOOK_INLINE,
 } cd_hook_type;
+
+typedef enum cd_hook_errors_e{
+    CD_HOOK_OK = 0,
+    CD_HOOK_ERROR_ALREADY_HOOKED,
+    CD_HOOK_ERROR_WRONG_HOOK_METHOD,
+    CD_HOOK_ERROR_NOT_HOOKED,
+    CD_HOOK_ERROR_MEMORY_PROTECTION,
+    CD_HOOK_ERROR_UNDEFINED,
+} cd_hook_errors;
 
 typedef struct cd_hook_ctx_s{
     void *to_hook;
@@ -56,15 +65,15 @@ typedef struct cd_hook_ctx_s{
 * manual  method */
 #define CH_CALL_ORIGINAL(CTX, FUNCTION_PROTOTYPE, ...) \
     switch((CTX)->type){\
-        case HOOK_INLINE:\
+        case CD_HOOK_INLINE:\
             ch_inline(CTX, false);\
             ((FUNCTION_PROTOTYPE)(CTX)->to_hook)(__VA_ARGS__);\
             ch_inline(CTX, true);\
             break;\
-        case HOOK_UNDEFINED:\
+        case CD_HOOK_UNDEFINED:\
         default:\
             fprintf(stderr, "Not hooked or set to a non-existent hook method");\
     }
-bool ch_inline(cd_hook_ctx *ctx, bool hook);
+cd_hook_errors ch_inline(cd_hook_ctx *ctx, bool hook);
 
 #endif /* CD_HOOK_H */

@@ -22,32 +22,55 @@ static bool _change_adress_write_protection(cd_hook_ctx *ctx, bool allow_write){
     return true;
 }
 
-bool ch_inline(cd_hook_ctx *ctx, bool hook){
+const char *
+cm_util_status_to_str (cd_hook_errors status)
+{
+    switch (status)
+    {
+        case CD_HOOK_OK:
+            return "OK";
+        case CD_HOOK_ERROR_ALREADY_HOOKED:
+            return "ERR: Already hooked";
+        case CD_HOOK_ERROR_WRONG_HOOK_METHOD:
+            return "ERR: Used wrong hooking method";
+        case CD_HOOK_ERROR_NOT_HOOKED:
+            return "ERR: Not hooked";
+        case CD_HOOK_ERROR_MEMORY_PROTECTION:
+            return "ERR: Couldn't change memory protection";
+        case CD_HOOK_ERROR_UNDEFINED:
+        default:
+            return "ERR: Undefined";
+    }
+}
+
+cd_hook_errors ch_inline(cd_hook_ctx *ctx, bool hook){
     if (ctx->hooked){
-        if (ctx->type == HOOK_INLINE){
-            if(hook) return true;
-        } else return false;
+        if (ctx->type == CD_HOOK_INLINE){
+            if(hook) return CD_HOOK_ERROR_ALREADY_HOOKED;
+        } else return CD_HOOK_ERROR_WRONG_HOOK_METHOD;
     } else {
-        if(!hook) return true;
+        if(!hook) return CD_HOOK_ERROR_NOT_HOOKED;
     }
     
-    if (!_change_adress_write_protection(ctx, true)) return false;
+    if (!_change_adress_write_protection(ctx, true))
+        return CD_HOOK_ERROR_MEMORY_PROTECTION;
 
     if(hook){
         memcpy(&jmp_bytes[JUMP_ADDRESS_OFFSET], &ctx->hook, sizeof(void*));
         memcpy(ctx->old_bytes, ctx->to_hook, sizeof(jmp_bytes));
         memcpy(ctx->to_hook, &jmp_bytes, sizeof(jmp_bytes));
-        ctx->type = HOOK_INLINE;
+        ctx->type = CD_HOOK_INLINE;
         ctx->hooked = true;
     }
     else {
         memcpy(ctx->to_hook, ctx->old_bytes, sizeof(jmp_bytes));
-        ctx->type = HOOK_UNDEFINED;
+        ctx->type = CD_HOOK_UNDEFINED;
         ctx->hooked = false;
     }
 
     /* Restore the memory protection before returning */
-    if (!_change_adress_write_protection(ctx, false)) return false;
+    if (!_change_adress_write_protection(ctx, false))
+        return CD_HOOK_ERROR_MEMORY_PROTECTION;
 
-    return true;
+    return CD_HOOK_OK;
 }
