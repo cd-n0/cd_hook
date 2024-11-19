@@ -1,0 +1,41 @@
+#include "cd_hook.h"
+/* MASSIVE Credits to https://gist.github.com/dutc/991c14bc20ef5a1249c4 */
+static uint8_t jmp_bytes[] = {MOV_ACC, ADDRESS_PADDING, JMP_ACC};
+
+bool ch_inline(cd_hook_ctx *ctx, bool hook){
+    if ((ctx->hooked && hook) || (!ctx->hooked && !hook)) return true;
+    
+    int pagesize = sysconf(_SC_PAGE_SIZE);
+    void *page = (char*)ctx->to_hook;
+    /* https://stackoverflow.com/a/22971450 */
+    if (pagesize % 2 == 0)
+        page = (void*)((uintptr_t)page & ~(pagesize - 1));
+    else
+        page = (void*)((uintptr_t)page & ~(pagesize));
+    int rc = mprotect(page, pagesize, PROT_READ | PROT_WRITE | PROT_EXEC);
+    if(rc) {
+        fprintf(stderr, "mprotect() failed.\n");
+        return false;
+    }
+
+    if(hook){
+        memcpy(&jmp_bytes[JUMP_ADDRESS_OFFSET], &ctx->hook, sizeof(void*));
+        memcpy(ctx->old_bytes, ctx->to_hook, sizeof(jmp_bytes));
+        memcpy(ctx->to_hook, &jmp_bytes, sizeof(jmp_bytes));
+        ctx->type = HOOK_INLINE;
+        ctx->hooked = true;
+    }
+    else {
+        memcpy(ctx->to_hook, ctx->old_bytes, sizeof(jmp_bytes));
+        ctx->type = HOOK_UNDEFINED;
+        ctx->hooked = false;
+    }
+
+    /* Restore the memory protection before returning */
+    rc = mprotect(page, pagesize, PROT_READ | PROT_EXEC);
+    if(rc) {
+        fprintf(stderr, "mprotect() failed.\n");
+        return false;
+    }
+    return true;
+}

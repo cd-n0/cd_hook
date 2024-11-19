@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c89 -I$(INCDIR) -Wall -Wextra -Wpedantic
+CFLAGS=-I$(INCDIR) -Wall -Wextra
 LDLIBS=
 DEBUG_FLAGS = -ggdb3
 RELEASE_FLAGS = -O2
@@ -21,13 +21,14 @@ TESTS = $(TESTSRCS:.c=)
 
 # Directories
 SRCDIR = src
-INCDIR = inc
 OBJDIR = obj
+INCDIR = inc
 
 SRCS = $(wildcard $(SRCDIR)/*.c)
 OBJS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
+INCLUDES = $(wildcard $(INCDIR)/*.h)
 
-TARGET=target.out
+TARGET=cd_hook.out
 
 ################################################################################
 
@@ -43,7 +44,7 @@ clean:
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-$(OBJDIR)/%.o : $(SRCDIR)/%.c 
+$(OBJDIR)/%.o : $(SRCDIR)/%.c $(INCLUDES)
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
@@ -62,4 +63,4 @@ test: $(TESTS) $(TESTSRCS)
 compile_flags.txt: Makefile
 	echo "$(CFLAGS)" | tr ' ' '\n'> compile_flags.txt
 
-.PHONY: all clean
+.PHONY: all clean attach
