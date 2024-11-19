@@ -1,11 +1,15 @@
-# PROJECT_TITLE
+# CD Hook
 
-PROJECT_TITLE is...
+CD Hook is a hooking library for C/C++
+There's an example located at `cd_hook/src/main.c`, and some tests at `tests`
 
-## Building
+It currently supports:
+- Inline hooking
+
+## Building example
 ```sh
-git clone GIT_URL
-cd PROJECT_NAME
+git clone https://github.com/cd-n0/cd_hook.git
+cd cd_hook
 make BUILD=release
 ```
 
@@ -15,9 +19,7 @@ make test
 ```
 
 ## Usage
-```sh
-./TARGET_NAME
-```
+Use it as a submodule or copy the header and source to your project.
 
 ## Contributing
 
