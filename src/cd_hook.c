@@ -44,15 +44,23 @@ cm_util_status_to_str (cd_hook_errors status)
     }
 }
 
-cd_hook_errors
-ch_inline(cd_hook_ctx *ctx, bool hook){
+static cd_hook_errors
+_check_hook(cd_hook_ctx *ctx, bool hook, cd_hook_type type){
     if (ctx->hooked){
-        if (ctx->type == CD_HOOK_INLINE){
+        if (ctx->type == type){
             if(hook) return CD_HOOK_ERROR_ALREADY_HOOKED;
         } else return CD_HOOK_ERROR_WRONG_HOOK_METHOD;
     } else {
         if(!hook) return CD_HOOK_ERROR_NOT_HOOKED;
     }
+    return CD_HOOK_OK;
+}
+
+cd_hook_errors
+ch_inline(cd_hook_ctx *ctx, bool hook){
+    cd_hook_errors err = _check_hook(ctx, hook, CD_HOOK_INLINE);
+    if(err != CD_HOOK_OK)
+        return err;
     
     if (!_change_adress_write_protection(ctx, true))
         return CD_HOOK_ERROR_MEMORY_PROTECTION;
