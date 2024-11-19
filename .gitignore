@@ -1,8 +1,9 @@
 # Objects
 obj/
 
-# Binary
-target.out
+# Binaries
+cd_hook.out
+tests/*.out
 
 # Generated clangd file
 compile_flags.txt
