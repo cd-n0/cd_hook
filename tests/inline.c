@@ -22,7 +22,7 @@ int f4(int a, int b){
 }
 
 int main(void){
-    cd_hook_ctx f1_ctx = {.to_hook = f1, .hook = f2};
+    cd_hook_ctx f1_ctx = {.to_hook = (void*)f1, .hook = (void*)f2};
     f1();
     assert(strcmp(out, "f1") == 0);
     ch_inline(&f1_ctx, true);
@@ -31,7 +31,7 @@ int main(void){
     ch_inline(&f1_ctx, false);
     f1();
     assert(strcmp(out, "f1") == 0);
-    cd_hook_ctx f3_ctx = {.to_hook = f3, .hook = f4};
+    cd_hook_ctx f3_ctx = {.to_hook = (void*)f3, .hook = (void*)f4};
     assert(15 == f3(5, 10));
     ch_inline(&f3_ctx, true);
     assert(42 == f3(5, 10));

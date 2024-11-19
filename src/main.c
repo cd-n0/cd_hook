@@ -19,7 +19,7 @@ the original function is a: %d and b: %d\n", a, b);
 }
 
 int main(void){
-    cd_hook_ctx f1_ctx = {.to_hook = f1, .hook = f2};
+    cd_hook_ctx f1_ctx = {.to_hook = (void*)f1, .hook = (void*)f2};
     f1();
     ch_inline(&f1_ctx, true);
     f1();
@@ -27,7 +27,7 @@ int main(void){
     f1();
     ch_inline(&f1_ctx, false);
     f1();
-    cd_hook_ctx f3_ctx = {.to_hook = f3, .hook = f4};
+    cd_hook_ctx f3_ctx = {.to_hook = (void*)f3, .hook = (void*)f4};
     printf("f3 returned: %d\n", f3(5, 10));
     ch_inline(&f3_ctx, true);
     printf("f3 returned: %d\n", f3(5, 10));
