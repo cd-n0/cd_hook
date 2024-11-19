@@ -2,7 +2,8 @@
 /* MASSIVE Credits to https://gist.github.com/dutc/991c14bc20ef5a1249c4 */
 static uint8_t jmp_bytes[] = {MOV_ACC, ADDRESS_PADDING, JMP_ACC};
 
-static bool _change_adress_write_protection(cd_hook_ctx *ctx, bool allow_write){
+static bool
+_change_adress_write_protection(cd_hook_ctx *ctx, bool allow_write){
     int pagesize = sysconf(_SC_PAGE_SIZE);
     void *page = (char*)ctx->to_hook;
     /* https://stackoverflow.com/a/22971450 */
@@ -43,7 +44,8 @@ cm_util_status_to_str (cd_hook_errors status)
     }
 }
 
-cd_hook_errors ch_inline(cd_hook_ctx *ctx, bool hook){
+cd_hook_errors
+ch_inline(cd_hook_ctx *ctx, bool hook){
     if (ctx->hooked){
         if (ctx->type == CD_HOOK_INLINE){
             if(hook) return CD_HOOK_ERROR_ALREADY_HOOKED;
