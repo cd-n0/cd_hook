@@ -23,7 +23,13 @@ static bool _change_adress_write_protection(cd_hook_ctx *ctx, bool allow_write){
 }
 
 bool ch_inline(cd_hook_ctx *ctx, bool hook){
-    if ((ctx->hooked && hook) || (!ctx->hooked && !hook)) return true;
+    if (ctx->hooked){
+        if (ctx->type == HOOK_INLINE){
+            if(hook) return true;
+        } else return false;
+    } else {
+        if(!hook) return true;
+    }
     
     if (!_change_adress_write_protection(ctx, true)) return false;
 
