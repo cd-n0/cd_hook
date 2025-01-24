@@ -1,4 +1,5 @@
 CC=gcc
+CXXC=g++
 CFLAGS=-I$(INCDIR) -Wall -Wextra
 LDLIBS=
 DEBUG_FLAGS = -ggdb3
@@ -14,10 +15,10 @@ else ifeq ($(BUILD), release)
 endif
 
 # Test source files
-TESTSRCS = $(wildcard tests/*.c)
+TESTSRCS = $(wildcard tests/*.cpp)
 
 # Test executables
-TESTS = $(TESTSRCS:.c=)
+TESTS = $(TESTSRCS:.cpp=.out)
 
 # Directories
 SRCDIR = src
@@ -26,10 +27,9 @@ INCDIR = inc
 
 SRCS = $(wildcard $(SRCDIR)/*.c)
 OBJS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
-MAINOBJ = $(OBJDIR)/main.o
 INCLUDES = $(wildcard $(INCDIR)/*.h)
 
-TARGET=cd_hook.out
+TARGET=cd_hook.a
 
 ################################################################################
 
@@ -43,20 +43,20 @@ clean:
 	rm -f compile_flags.txt
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
+	ar rcs $@ $^
 
 $(OBJDIR)/%.o : $(SRCDIR)/%.c $(INCLUDES)
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Compile the test executables
-$(TESTS): $(TESTSRCS) $(OBJS)
-	$(CC) $(CFLAGS) -o $@.out $@.c $(filter-out $(MAINOBJ), $(OBJS)) $(LDLIBS)
+$(TESTS): tests/%.out: tests/%.cpp $(TARGET)
+	$(CXXC) $(CFLAGS) -o $@ $< $(TARGET) $(LDLIBS)
 
 # Run the tests
 test: $(TESTS) $(TESTSRCS)
 	for test in $(TESTS); do \
-		./$$test.out && \
+		./$$test && \
 		echo "TEST $$test OK" || \
 		echo "TEST $$test FAIL"; \
 	done

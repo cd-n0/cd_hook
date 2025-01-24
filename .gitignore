@@ -2,7 +2,8 @@
 obj/
 
 # Binaries
-cd_hook.out
+cd_hook.a
+
 tests/*.out
 
 # Generated clangd file

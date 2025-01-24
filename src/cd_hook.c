@@ -1,9 +1,19 @@
 #include "cd_hook.h"
+#include <stdlib.h>
+
 /* MASSIVE Credits to https://gist.github.com/dutc/991c14bc20ef5a1249c4 */
 static uint8_t jmp_bytes[] = {MOV_ACC, ADDRESS_PADDING, JMP_ACC};
 
-static bool
-_change_adress_write_protection(cd_hook_ctx *ctx, bool allow_write){
+struct cd_hook_ctx_s {
+    void *to_hook;
+    void *original;
+    void *hook;
+    cd_hook_type type;
+    uint8_t old_bytes[INLINE_LENGTH];
+    bool hooked;
+};
+
+static bool _change_adress_write_protection(cd_hook_ctx *ctx, bool allow_write){
     int pagesize = sysconf(_SC_PAGE_SIZE);
     void *page = (char*)ctx->to_hook;
     /* https://stackoverflow.com/a/22971450 */
@@ -23,8 +33,7 @@ _change_adress_write_protection(cd_hook_ctx *ctx, bool allow_write){
     return true;
 }
 
-const char *
-cm_util_status_to_str (cd_hook_errors status)
+const char *cm_util_status_to_str (cd_hook_errors status)
 {
     switch (status)
     {
@@ -44,8 +53,7 @@ cm_util_status_to_str (cd_hook_errors status)
     }
 }
 
-static cd_hook_errors
-_check_hook(cd_hook_ctx *ctx, bool hook, cd_hook_type type){
+static cd_hook_errors _check_hook(cd_hook_ctx *ctx, bool hook, cd_hook_type type){
     if (ctx->hooked){
         if (ctx->type == type){
             if(hook) return CD_HOOK_ERROR_ALREADY_HOOKED;
@@ -56,8 +64,40 @@ _check_hook(cd_hook_ctx *ctx, bool hook, cd_hook_type type){
     return CD_HOOK_OK;
 }
 
-cd_hook_errors
-ch_inline(cd_hook_ctx *ctx, bool hook){
+cd_hook_ctx *ch_create_ctx(void *to_hook, void *hook){
+    cd_hook_ctx *ctx = malloc(sizeof(*ctx));
+    memcpy(ctx, &(cd_hook_ctx){
+    .to_hook = to_hook, 
+    .original = to_hook,
+    .hook = hook,
+    .type = CD_HOOK_UNDEFINED,
+    .hooked = false,
+    .old_bytes = "0x00" /* Just to get rid of initialization warning */
+    },sizeof(*ctx));
+
+    return ctx;
+}
+
+cd_hook_errors ch_destroy_ctx(cd_hook_ctx *ctx){
+    cd_hook_errors e = ch_unhook(ctx);
+    if (e != CD_HOOK_OK) return e;
+    free(ctx);
+    return CD_HOOK_OK;
+}
+
+cd_hook_errors ch_unhook(cd_hook_ctx *ctx){
+    if (!ctx->hooked) return CD_HOOK_ERROR_NOT_HOOKED;
+    switch(ctx->type){
+        case CD_HOOK_INLINE:
+            return ch_inline(ctx, false);
+        case CD_HOOK_VMT:
+            return ch_vmt(ctx, false, 0);
+        default:
+            return CD_HOOK_ERROR_UNDEFINED;
+    }
+}
+
+cd_hook_errors ch_inline(cd_hook_ctx *ctx, bool hook){
     cd_hook_errors err = _check_hook(ctx, hook, CD_HOOK_INLINE);
     if(err != CD_HOOK_OK)
         return err;
@@ -79,6 +119,41 @@ ch_inline(cd_hook_ctx *ctx, bool hook){
     }
 
     /* Restore the memory protection before returning */
+    if (!_change_adress_write_protection(ctx, false))
+        return CD_HOOK_ERROR_MEMORY_PROTECTION;
+
+    return CD_HOOK_OK;
+}
+
+/* Index doesn't matter when unhooking */
+cd_hook_errors ch_vmt(cd_hook_ctx *ctx, bool hook, size_t index){
+    cd_hook_errors err = _check_hook(ctx, hook, CD_HOOK_VMT);
+    if(err != CD_HOOK_OK)
+        return err;
+
+    if (ctx->to_hook == ctx->original){
+        ctx->to_hook = *(uintptr_t**)ctx->to_hook + index;
+        /*                            vmt address + index */
+        /* original is address of the function pointer */
+        ctx->original = &(**(uintptr_t**)ctx->to_hook);
+    }
+
+    if (!_change_adress_write_protection(ctx, true))
+        return CD_HOOK_ERROR_MEMORY_PROTECTION;
+
+    if (hook){
+        /* to_hook becomes the address of the function pointer */
+        *(uintptr_t*)ctx->to_hook = (uintptr_t)ctx->hook;
+        ctx->type = CD_HOOK_VMT;
+        ctx->hooked = true;
+    } else {
+        if (!_change_adress_write_protection(ctx, true))
+            return CD_HOOK_ERROR_MEMORY_PROTECTION;
+        *(uintptr_t*)ctx->to_hook = (uintptr_t)ctx->original;
+        ctx->type = CD_HOOK_UNDEFINED;
+        ctx->hooked = false;
+    }
+
     if (!_change_adress_write_protection(ctx, false))
         return CD_HOOK_ERROR_MEMORY_PROTECTION;
 
