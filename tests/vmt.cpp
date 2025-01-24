@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 
+// TODO: use asserts instead of printing
+
 // Base class: Animal
 class Animal {
 public:
@@ -93,7 +95,7 @@ int main() {
 
     std::cout << "\n####################\nHooking and running hooked methods:\n####################\n";
     /* VMT Hooks */
-    std::cout << "\n\nAnimal: " << myAnimal << " sound method hook\n";
+    std::cout << "Animal: " << myAnimal << " sound method hook\n";
     cd_hook_ctx *ctxAnimalSound = ch_create_ctx((void*)myAnimal, (void*)hook);
     if (CD_HOOK_OK != ch_vmt(ctxAnimalSound, true, 2)) return 1;
     myAnimal->sound();
