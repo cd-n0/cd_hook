@@ -32,25 +32,22 @@ int main(void){
     assert(0 == strcmp(out, "f1"));
 
     cd_hook_ctx *f1_ctx = ch_create_ctx((void*)f1, (void*)f2);
-    ch_inline(f1_ctx, true);
+    ch_inline(f1_ctx);
     f1();
     assert(0 == strcmp(out, "Hooked by f2"));
 
-    ch_inline(f1_ctx, false);
+    ch_unhook(f1_ctx);
     f1();
     assert(0 == strcmp(out, "f1"));
 
     assert(15 == f3(5, 10));
 
     cd_hook_ctx *f3_ctx = ch_create_ctx((void*)f3, (void*)f4);
-    ch_inline(f3_ctx, true);
+    ch_inline(f3_ctx);
     assert(42 == f3(12, 20));
 
-    ch_inline(f3_ctx, false);
+    ch_unhook(f3_ctx);
     assert(25 == f3(5, 20));
-
-    ch_destroy_ctx(f1_ctx);
-    ch_destroy_ctx(f3_ctx);
 
     return 0;
 }

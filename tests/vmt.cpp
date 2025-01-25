@@ -97,20 +97,20 @@ int main() {
     /* VMT Hooks */
     std::cout << "Animal: " << myAnimal << " sound method hook\n";
     cd_hook_ctx *ctxAnimalSound = ch_create_ctx((void*)myAnimal, (void*)hook);
-    if (CD_HOOK_OK != ch_vmt(ctxAnimalSound, true, 2)) return 1;
+    if (CD_HOOK_OK != ch_vmt(ctxAnimalSound, 2)) return 1;
     myAnimal->sound();
-    if (CD_HOOK_OK != ch_destroy_ctx(ctxAnimalSound)) return 1;
+    if (CD_HOOK_OK != ch_unhook(ctxAnimalSound)) return 1;
     std::cout << "\n\nDog: " << myDog << " sound method hook\n";
     cd_hook_ctx *ctxDogSound = ch_create_ctx((void*)myDog, (void*)hook);
-    if (CD_HOOK_OK != ch_vmt(ctxDogSound, true, 2)) return 1;
+    if (CD_HOOK_OK != ch_vmt(ctxDogSound, 2)) return 1;
     myDog->sound();
-    if (CD_HOOK_OK != ch_destroy_ctx(ctxDogSound)) return 1;
+    if (CD_HOOK_OK != ch_unhook(ctxDogSound)) return 1;
 
     std::cout << "\n\nCat: " << myCat << " move method hook\n";
     cd_hook_ctx *ctxCatMove = ch_create_ctx((void*)myCat, (void*)hook);
-    if (CD_HOOK_OK != ch_vmt(ctxCatMove, true, 3)) return 1;
+    if (CD_HOOK_OK != ch_vmt(ctxCatMove, 3)) return 1;
     myCat->move();
-    if (CD_HOOK_OK != ch_destroy_ctx(ctxCatMove)) return 1;
+    if (CD_HOOK_OK != ch_unhook(ctxCatMove)) return 1;
 
     std::cout << "\n####################\nRunning unhooked methods:\n####################\n";
     /* Using hooked base class methods after unhooking */

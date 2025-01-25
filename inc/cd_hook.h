@@ -76,10 +76,9 @@ typedef struct cd_hook_ctx_s cd_hook_ctx;
     }
 
 cd_hook_ctx *ch_create_ctx(void *to_hook, void *hook);
-cd_hook_errors ch_destroy_ctx(cd_hook_ctx *ctx);
 cd_hook_errors ch_unhook(cd_hook_ctx *ctx);
-cd_hook_errors ch_inline(cd_hook_ctx *ctx, bool hook);
-cd_hook_errors ch_vmt(cd_hook_ctx *ctx, bool hook, size_t idx);
+cd_hook_errors ch_inline(cd_hook_ctx *ctx);
+cd_hook_errors ch_vmt(cd_hook_ctx *ctx, size_t vmt_index);
 
 #if defined(__cplusplus)
 }

@@ -64,40 +64,7 @@ static cd_hook_errors _check_hook(cd_hook_ctx *ctx, bool hook, cd_hook_type type
     return CD_HOOK_OK;
 }
 
-cd_hook_ctx *ch_create_ctx(void *to_hook, void *hook){
-    cd_hook_ctx *ctx = malloc(sizeof(*ctx));
-    memcpy(ctx, &(cd_hook_ctx){
-    .to_hook = to_hook, 
-    .original = to_hook,
-    .hook = hook,
-    .type = CD_HOOK_UNDEFINED,
-    .hooked = false,
-    .old_bytes = "0x00" /* Just to get rid of initialization warning */
-    },sizeof(*ctx));
-
-    return ctx;
-}
-
-cd_hook_errors ch_destroy_ctx(cd_hook_ctx *ctx){
-    cd_hook_errors e = ch_unhook(ctx);
-    if (e != CD_HOOK_OK) return e;
-    free(ctx);
-    return CD_HOOK_OK;
-}
-
-cd_hook_errors ch_unhook(cd_hook_ctx *ctx){
-    if (!ctx->hooked) return CD_HOOK_ERROR_NOT_HOOKED;
-    switch(ctx->type){
-        case CD_HOOK_INLINE:
-            return ch_inline(ctx, false);
-        case CD_HOOK_VMT:
-            return ch_vmt(ctx, false, 0);
-        default:
-            return CD_HOOK_ERROR_UNDEFINED;
-    }
-}
-
-cd_hook_errors ch_inline(cd_hook_ctx *ctx, bool hook){
+static cd_hook_errors _ch_inline_internal(cd_hook_ctx *ctx, bool hook){
     cd_hook_errors err = _check_hook(ctx, hook, CD_HOOK_INLINE);
     if(err != CD_HOOK_OK)
         return err;
@@ -126,13 +93,13 @@ cd_hook_errors ch_inline(cd_hook_ctx *ctx, bool hook){
 }
 
 /* Index doesn't matter when unhooking */
-cd_hook_errors ch_vmt(cd_hook_ctx *ctx, bool hook, size_t index){
+static cd_hook_errors _ch_vmt_internal(cd_hook_ctx *ctx, size_t vmt_index, bool hook){
     cd_hook_errors err = _check_hook(ctx, hook, CD_HOOK_VMT);
     if(err != CD_HOOK_OK)
         return err;
 
     if (ctx->to_hook == ctx->original){
-        ctx->to_hook = *(uintptr_t**)ctx->to_hook + index;
+        ctx->to_hook = *(uintptr_t**)ctx->to_hook + vmt_index;
         /*                            vmt address + index */
         /* original is address of the function pointer */
         ctx->original = &(**(uintptr_t**)ctx->to_hook);
@@ -159,3 +126,35 @@ cd_hook_errors ch_vmt(cd_hook_ctx *ctx, bool hook, size_t index){
 
     return CD_HOOK_OK;
 }
+
+cd_hook_ctx *ch_create_ctx(void *to_hook, void *hook){
+    static cd_hook_ctx ctx;
+    ctx.to_hook = to_hook; 
+    ctx.original = to_hook;
+    ctx.hook = hook;
+    ctx.type = CD_HOOK_UNDEFINED;
+    ctx.hooked = false;
+
+    return &ctx;
+}
+
+cd_hook_errors ch_unhook(cd_hook_ctx *ctx){
+    if (!ctx->hooked) return CD_HOOK_ERROR_NOT_HOOKED;
+    switch(ctx->type){
+        case CD_HOOK_INLINE:
+            return _ch_inline_internal(ctx, false);
+        case CD_HOOK_VMT:
+            return _ch_vmt_internal(ctx, false, 0);
+        default:
+            return CD_HOOK_ERROR_UNDEFINED;
+    }
+}
+
+
+cd_hook_errors ch_inline(cd_hook_ctx *ctx){
+    return _ch_inline_internal(ctx, true);
+};
+
+cd_hook_errors ch_vmt(cd_hook_ctx *ctx, size_t vmt_index){
+    return _ch_vmt_internal(ctx, vmt_index, true);
+};
