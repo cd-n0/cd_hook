@@ -1,18 +1,12 @@
 #ifndef CD_HOOK_H
 #define CD_HOOK_H
 
+#include <stddef.h>
+#include <stdbool.h>
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#include <stdint.h>
-#include <stdio.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <string.h>
-#include <dlfcn.h>
-#include <stdbool.h>
-#include <raylib.h>
 
 /*
 i386:
@@ -75,10 +69,12 @@ typedef struct cd_hook_ctx_s cd_hook_ctx;
             fprintf(stderr, "Not hooked or set to a non-existent hook method");\
     }
 
+const char *ch_util_status_to_string (const cd_hook_errors status);
 cd_hook_ctx *ch_create_ctx(void *to_hook, void *hook);
+cd_hook_errors ch_destroy_ctx(cd_hook_ctx *ctx, const bool unhook);
 cd_hook_errors ch_unhook(cd_hook_ctx *ctx);
 cd_hook_errors ch_inline(cd_hook_ctx *ctx);
-cd_hook_errors ch_vmt(cd_hook_ctx *ctx, size_t vmt_index);
+cd_hook_errors ch_vmt(cd_hook_ctx *ctx, const size_t vmt_index);
 
 #if defined(__cplusplus)
 }

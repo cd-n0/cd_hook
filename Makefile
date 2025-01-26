@@ -2,7 +2,7 @@ CC=gcc
 CXXC=g++
 CFLAGS=-I$(INCDIR) -Wall -Wextra
 LDLIBS=
-DEBUG_FLAGS = -ggdb3
+DEBUG_FLAGS = -ggdb
 RELEASE_FLAGS = -O2
 
 # Default build is debug

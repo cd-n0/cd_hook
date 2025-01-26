@@ -1,28 +1,31 @@
 #include "cd_hook.h"
-#include <iostream>
+#include <cstdint>
 #include <string>
+#include <cassert>
+#include <cstring>
 
-// TODO: use asserts instead of printing
+#define UNUSED(x) (void)x
+#define BUFFER_SIZE 2048
+
+static char out[BUFFER_SIZE];
 
 // Base class: Animal
 class Animal {
 public:
-    Animal(std::string animalName) {
-        name = animalName;
-    }
-    virtual ~Animal() {
-    }
+    Animal(std::string animalName) : name(animalName) {}
+
+    virtual ~Animal() {}
 
     virtual void sound() const {
-        std::cout << name << " makes a sound." << "\n";
+        strcpy(out, (name + " makes a sound.").c_str());
     }
 
     virtual void move() const {
-        std::cout << name << " moves." << "\n";
+        strcpy(out, (name + " moves.").c_str());
     }
 
-    virtual void eat(std::string food_name) {
-        std::cout << name << " eats generic animal " << food_name << ".\n";
+    virtual void eat(std::string food_name) const {
+        strcpy(out, (name + " eats generic animal " + food_name + ".").c_str());
     }
 
     std::string name;
@@ -31,18 +34,18 @@ public:
 // Derived class: Dog (from Animal)
 class Dog : public Animal {
 public:
-   Dog(std::string dogName) : Animal(dogName) {}
+    Dog(std::string dogName) : Animal(dogName) {}
 
     void sound() const override {
-        std::cout << name << " says Woof!" << "\n";
+        strcpy(out, (name + " says Woof!").c_str());
     }
 
     void move() const override {
-        std::cout << name << " runs around happily!" << "\n";
+        strcpy(out, (name + " runs around happily!").c_str());
     }
 
-    void eat(std::string food_name) override {
-        std::cout << name << " eats dog " << food_name << ".\n";
+    void eat(std::string food_name) const override {
+        strcpy(out, (name + " eats dog " + food_name + ".").c_str());
     }
 };
 
@@ -52,76 +55,102 @@ public:
     Cat(std::string catName) : Animal(catName) {}
 
     void sound() const override {
-        std::cout << name << " says Meow!" << "\n";
+        strcpy(out, (name + " says Meow!").c_str());
     }
 
     void move() const override {
-        std::cout << name << " slinks gracefully." << "\n";
+        strcpy(out, (name + " slinks gracefully.").c_str());
     }
 
-    void eat(std::string food_name) override {
-        std::cout << name << " eats cat " << food_name << ".\n";
+    void eat(std::string food_name) const override {
+        strcpy(out, (name + " eats cat " + food_name + ".").c_str());
     }
 };
 
-void hook(void* obj) {
-    std::cout << "Hooked function called for object: " << obj << "\n";
-    std::cout << "The Animal is named: " << static_cast<Animal*>(obj)->name << "\n";
-    std::cout << "Running another method for " << static_cast<Animal*>(obj)->name << "\n";
-    static_cast<Animal*>(obj)->eat("croissant"); 
+// Hooked functions
+void animal_sound_hook(const Animal* obj) {
+    strcpy(out, (obj->name + " is hooked and makes a strange sound!").c_str());
+}
+
+void dog_sound_hook(const Dog* obj) {
+    obj->eat("food, but it's a bit awkward");
+}
+
+void cat_move_hook(const Cat* obj) {
+    strcpy(out, (obj->name + " is hooked and moves differently!").c_str());
 }
 
 int main() {
     Animal* myAnimal = new Animal("Bobo");
-    Animal* myDog = new Dog("Buddy");
-    Animal* myCat = new Cat("Whiskers");
+    Dog* myDog = new Dog("Buddy");
+    Cat* myCat = new Cat("Whiskers");
 
-    std::cout << "####################\nRunning base class methods:\n####################\n";
-    /* Using base class methods */
-    std::cout << "Animal: " << myAnimal << "\n";
+    /* BEFORE HOOKING */
     myAnimal->sound();
-    myAnimal->move();
-    myAnimal->eat("food");
+    assert(0 == strcmp(out, "Bobo makes a sound."));
 
-    std::cout << "\nDog: " << myDog << "\n";
     myDog->sound();
-    myDog->move();
-    myDog->eat("food");
-    
-    std::cout << "\nCat: " << myCat << "\n";
-    myCat->sound();
-    myCat->move();
-    myCat->eat("food");
+    assert(0 == strcmp(out, "Buddy says Woof!"));
 
-    std::cout << "\n####################\nHooking and running hooked methods:\n####################\n";
-    /* VMT Hooks */
-    std::cout << "Animal: " << myAnimal << " sound method hook\n";
-    cd_hook_ctx *ctxAnimalSound = ch_create_ctx((void*)myAnimal, (void*)hook);
-    if (CD_HOOK_OK != ch_vmt(ctxAnimalSound, 2)) return 1;
+    myCat->move();
+    assert(0 == strcmp(out, "Whiskers slinks gracefully."));
+
+    /* VMT HOOKS */
+    cd_hook_ctx* animal_sound_ctx = ch_create_ctx((void*)myAnimal, (void*)animal_sound_hook);
+    ch_vmt(animal_sound_ctx, 2);
     myAnimal->sound();
-    if (CD_HOOK_OK != ch_unhook(ctxAnimalSound)) return 1;
-    std::cout << "\n\nDog: " << myDog << " sound method hook\n";
-    cd_hook_ctx *ctxDogSound = ch_create_ctx((void*)myDog, (void*)hook);
-    if (CD_HOOK_OK != ch_vmt(ctxDogSound, 2)) return 1;
+    assert(0 == strcmp(out, "Bobo is hooked and makes a strange sound!"));
+
+    cd_hook_ctx* dog_sound_ctx = ch_create_ctx((void*)myDog, (void*)dog_sound_hook);
+    ch_vmt(dog_sound_ctx, 2);
     myDog->sound();
-    if (CD_HOOK_OK != ch_unhook(ctxDogSound)) return 1;
+    assert(0 == strcmp(out, "Buddy eats dog food, but it's a bit awkward."));
 
-    std::cout << "\n\nCat: " << myCat << " move method hook\n";
-    cd_hook_ctx *ctxCatMove = ch_create_ctx((void*)myCat, (void*)hook);
-    if (CD_HOOK_OK != ch_vmt(ctxCatMove, 3)) return 1;
+    cd_hook_ctx* cat_move_ctx = ch_create_ctx((void*)myCat, (void*)cat_move_hook);
+    ch_vmt(cat_move_ctx, 3);
     myCat->move();
-    if (CD_HOOK_OK != ch_unhook(ctxCatMove)) return 1;
+    assert(0 == strcmp(out, "Whiskers is hooked and moves differently!"));
 
-    std::cout << "\n####################\nRunning unhooked methods:\n####################\n";
-    /* Using hooked base class methods after unhooking */
-    std::cout << "Animal: " << myAnimal << "\n";
+    /* UNHOOKING */
+    ch_unhook(animal_sound_ctx);
+    ch_unhook(dog_sound_ctx);
+    ch_unhook(cat_move_ctx);
+
     myAnimal->sound();
+    assert(0 == strcmp(out, "Bobo makes a sound."));
 
-    std::cout << "\nDog: " << myDog << "\n";
     myDog->sound();
-    
-    std::cout << "\nCat: " << myCat << "\n";
+    assert(0 == strcmp(out, "Buddy says Woof!"));
+
     myCat->move();
+    assert(0 == strcmp(out, "Whiskers slinks gracefully."));
+
+    /* REHOOKING */
+    ch_vmt(animal_sound_ctx, 2);
+    myAnimal->sound();
+    assert(0 == strcmp(out, "Bobo is hooked and makes a strange sound!"));
+
+    ch_vmt(dog_sound_ctx, 2);
+    myDog->sound();
+    assert(0 == strcmp(out, "Buddy eats dog food, but it's a bit awkward."));
+
+    ch_vmt(cat_move_ctx, 3);
+    myCat->move();
+    assert(0 == strcmp(out, "Whiskers is hooked and moves differently!"));
+
+    ch_destroy_ctx(dog_sound_ctx, false);
+    /* UNHOOKING */
+    ch_destroy_ctx(animal_sound_ctx, true);
+    ch_destroy_ctx(cat_move_ctx, true);
+
+    myAnimal->sound();
+    assert(0 == strcmp(out, "Bobo makes a sound."));
+
+    myDog->sound();
+    assert(0 == strcmp(out, "Buddy eats dog food, but it's a bit awkward."));
+
+    myCat->move();
+    assert(0 == strcmp(out, "Whiskers slinks gracefully."));
 
     delete myAnimal;
     delete myDog;
