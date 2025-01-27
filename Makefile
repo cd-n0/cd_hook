@@ -1,67 +1,46 @@
-CC=gcc
-CXXC=g++
-CFLAGS=-I$(INCDIR) -Wall -Wextra
-LDLIBS=
-DEBUG_FLAGS = -ggdb
-RELEASE_FLAGS = -O2
+include config.mk
 
-# Default build is debug
-BUILD ?= debug
-
-ifeq ($(BUILD), debug)
-    CFLAGS += $(DEBUG_FLAGS)
-else ifeq ($(BUILD), release)
-    CFLAGS += $(RELEASE_FLAGS)
-endif
-
-# Test source files
-TESTSRCS = $(wildcard tests/*.cpp)
-
-# Test executables
-TESTS = $(TESTSRCS:.cpp=.out)
-
-# Directories
-SRCDIR = src
-OBJDIR = obj
-INCDIR = inc
-
-SRCS = $(wildcard $(SRCDIR)/*.c)
-OBJS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
-INCLUDES = $(wildcard $(INCDIR)/*.h)
-
-TARGET=cd_hook.a
-
-################################################################################
-
-all: $(TARGET) compile_flags.txt
+all: $(TARGET)
 
 # Clean target to remove compiled files
 clean:
 	rm -rf $(OBJDIR)
 	rm -f $(TARGET)
-	rm -f $(TESTS)
-	rm -f compile_flags.txt
+	rm -rf $(TESTOBJDIR)
+	rm -rf $(TESTBINDIR)
 
+# Build the main target
 $(TARGET): $(OBJS)
 	ar rcs $@ $^
 
-$(OBJDIR)/%.o : $(SRCDIR)/%.c $(INCLUDES)
+# Object file compilation
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -MMD -MF $(@:.o=.d) -o $@ -c $<
 
-# Compile the test executables
-$(TESTS): tests/%.out: tests/%.cpp $(TARGET)
-	$(CXXC) $(CFLAGS) -o $@ $< $(TARGET) $(LDLIBS)
+# Include dependency files
+-include $(OBJDIR)/*.d
 
-# Run the tests
-test: $(TESTS) $(TESTSRCS)
-	for test in $(TESTS); do \
-		./$$test && \
-		echo "TEST $$test OK" || \
-		echo "TEST $$test FAIL"; \
+$(TESTOBJDIR):
+	@mkdir $@
+
+$(TESTBINDIR):
+	@mkdir $@
+
+# Rule to compile test objects
+$(TESTOBJDIR)/%.o: $(TESTDIR)/%.cpp | $(TESTOBJDIR)
+	$(CXXC) $(CXXFLAGS) -o $@ -c $<
+
+# Build test binaries from object files
+$(TESTBINDIR)/%: $(TESTOBJDIR)/%.o | $(TESTBINDIR) $(TARGET)
+	$(CXXC) $(CXXFLAGS) -o $@ $< $(TARGET) $(LDLIBS)
+
+# Run all tests
+test: $(TESTBINS)
+	@echo "Running tests..."
+	@for test in $^; do \
+		echo "Running $$test..."; \
+		./$$test && echo "TEST $$test OK" || echo "TEST $$test FAIL"; \
 	done
 
-compile_flags.txt: Makefile
-	echo "$(CFLAGS)" | tr ' ' '\n'> compile_flags.txt
-
-.PHONY: all clean attach
+.PHONY: all debug test

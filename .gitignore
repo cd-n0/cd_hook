@@ -2,9 +2,6 @@
 obj/
 
 # Binaries
-cd_hook.a
-
-tests/*.out
-
-# Generated clangd file
-compile_flags.txt
+libcdhook.a
+tests/bin/
+tests/obj/

@@ -1,4 +1,4 @@
-#include "cd_hook.h"
+#include "include/cd_hook.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -14,7 +14,7 @@ struct cd_hook_ctx_s {
     union {
         uint8_t old_bytes[INLINE_LENGTH];
         uint16_t vmt_index;
-    };
+    } hook_data;
     void *to_hook;
     void *original;
     void *hook;
@@ -83,13 +83,13 @@ static cd_hook_errors _ch_inline_internal(cd_hook_ctx *ctx, const bool hook){
 
     if(hook){
         memcpy(&jmp_bytes[JUMP_ADDRESS_OFFSET], &ctx->hook, sizeof(void*));
-        memcpy(ctx->old_bytes, ctx->to_hook, sizeof(jmp_bytes));
+        memcpy(ctx->hook_data.old_bytes, ctx->to_hook, sizeof(jmp_bytes));
         memcpy(ctx->to_hook, &jmp_bytes, sizeof(jmp_bytes));
         ctx->type = CD_HOOK_INLINE;
         ctx->hooked = true;
     }
     else {
-        memcpy(ctx->to_hook, ctx->old_bytes, sizeof(jmp_bytes));
+        memcpy(ctx->to_hook, ctx->hook_data.old_bytes, sizeof(jmp_bytes));
         ctx->type = CD_HOOK_UNDEFINED;
         ctx->hooked = false;
     }
@@ -106,28 +106,28 @@ static cd_hook_errors _ch_vmt_internal(cd_hook_ctx *ctx, const size_t vmt_index,
     if(err != CD_HOOK_OK)
         return err;
 
-    if (!_change_adress_write_protection(&(*(uintptr_t**)ctx->to_hook)[ctx->vmt_index], true))
+    if (!_change_adress_write_protection(&(*(uintptr_t**)ctx->to_hook)[ctx->hook_data.vmt_index], true))
         return CD_HOOK_ERROR_MEMORY_PROTECTION;
 
     if (CD_HOOK_UNDEFINED == ctx->type){
         /* to_hook is address of the class so *(*class + vmt_index)     */
         /* gets us the function             = *(VMTaddress + index)     */
-        ctx->vmt_index = vmt_index;
-        ctx->original = (*(uintptr_t***)ctx->to_hook)[ctx->vmt_index];
+        ctx->hook_data.vmt_index = vmt_index;
+        ctx->original = (*(uintptr_t***)ctx->to_hook)[ctx->hook_data.vmt_index];
         /* original is address of the function pointed by the pointer   */
     }
 
     if (hook){
-        (*(uintptr_t**)ctx->to_hook)[ctx->vmt_index] = (uintptr_t)ctx->hook;
+        (*(uintptr_t**)ctx->to_hook)[ctx->hook_data.vmt_index] = (uintptr_t)ctx->hook;
         ctx->type = CD_HOOK_VMT;
         ctx->hooked = true;
     } else {
-        (*(uintptr_t**)ctx->to_hook)[ctx->vmt_index] = (uintptr_t)ctx->original;
+        (*(uintptr_t**)ctx->to_hook)[ctx->hook_data.vmt_index] = (uintptr_t)ctx->original;
         ctx->type = CD_HOOK_UNDEFINED;
         ctx->hooked = false;
     }
 
-    if (!_change_adress_write_protection(&(*(uintptr_t**)ctx->to_hook)[ctx->vmt_index], false))
+    if (!_change_adress_write_protection(&(*(uintptr_t**)ctx->to_hook)[ctx->hook_data.vmt_index], false))
         return CD_HOOK_ERROR_MEMORY_PROTECTION;
 
     return CD_HOOK_OK;
@@ -168,8 +168,8 @@ cd_hook_errors ch_unhook(cd_hook_ctx *ctx){
 
 cd_hook_errors ch_inline(cd_hook_ctx *ctx){
     return _ch_inline_internal(ctx, true);
-};
+}
 
 cd_hook_errors ch_vmt(cd_hook_ctx *ctx, const size_t vmt_index){
     return _ch_vmt_internal(ctx, vmt_index, true);
-};
+}

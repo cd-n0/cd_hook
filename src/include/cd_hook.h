@@ -40,7 +40,7 @@ x86_64:
 typedef enum cd_hook_type_e{
     CD_HOOK_UNDEFINED = 0,
     CD_HOOK_INLINE,
-    CD_HOOK_VMT,
+    CD_HOOK_VMT
 } cd_hook_type;
 
 typedef enum cd_hook_errors_e{
@@ -49,7 +49,7 @@ typedef enum cd_hook_errors_e{
     CD_HOOK_ERROR_WRONG_HOOK_METHOD,
     CD_HOOK_ERROR_NOT_HOOKED,
     CD_HOOK_ERROR_MEMORY_PROTECTION,
-    CD_HOOK_ERROR_UNDEFINED,
+    CD_HOOK_ERROR_UNDEFINED
 } cd_hook_errors;
 
 typedef struct cd_hook_ctx_s cd_hook_ctx;
