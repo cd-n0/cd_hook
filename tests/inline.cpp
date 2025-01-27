@@ -1,7 +1,7 @@
 #include "include/cd_hook.h"
 #include <cassert>
 #include <cstring>
-#define UNUSED(x) (void)x
+
 #define BUFFER_SIZE 2048
 
 static char out[BUFFER_SIZE];

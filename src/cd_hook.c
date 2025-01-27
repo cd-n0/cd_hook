@@ -133,6 +133,18 @@ static cd_hook_errors _ch_vmt_internal(cd_hook_ctx *ctx, const size_t vmt_index,
     return CD_HOOK_OK;
 }
 
+cd_hook_errors ch_reinitialize_ctx(cd_hook_ctx *ctx, void *to_hook, void *hook){
+    if (ctx->hooked) {
+        cd_hook_errors e = ch_unhook(ctx);
+        if (CD_HOOK_OK != e) return e;
+    }
+    ctx->to_hook = to_hook; 
+    ctx->original = to_hook;
+    ctx->hook = hook;
+
+    return CD_HOOK_OK;
+}
+
 cd_hook_ctx *ch_create_ctx(void *to_hook, void *hook){
     cd_hook_ctx *ctx = calloc(1, sizeof(*ctx));
     if (ctx){
