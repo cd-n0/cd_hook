@@ -1,7 +1,7 @@
 CC = gcc
 CXXC = g++
-CFLAGS = -std=c99 -Wall -Wextra -Wpedantic -I$(SRCDIR)
-CXXFLAGS = -std=c++11 -Wall -Wextra -Wpedantic -I$(SRCDIR)
+CFLAGS = -std=c99 -Wall -Wextra -Wpedantic
+CXXFLAGS = -std=c++11 -Wall -Wextra -Wpedantic
 LDLIBS = 
 DEBUG_FLAGS = -ggdb
 RELEASE_FLAGS = -O2
