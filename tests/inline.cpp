@@ -35,12 +35,12 @@ int main(void){
     assert(15 == f3(5, 10));
 
     /* HOOKING */
-    cd_hook_ctx *f1_ctx = ch_create_ctx((void*)f1, (void*)f2);
+    ch_hook_ctx *f1_ctx = ch_create_ctx((void*)f1, (void*)f2);
     ch_inline(f1_ctx);
     f1();
     assert(0 == strcmp(out, "Hooked by f2"));
 
-    cd_hook_ctx *f3_ctx = ch_create_ctx((void*)f3, (void*)f4);
+    ch_hook_ctx *f3_ctx = ch_create_ctx((void*)f3, (void*)f4);
     ch_inline(f3_ctx);
     assert(42 == f3(12, 20));
 

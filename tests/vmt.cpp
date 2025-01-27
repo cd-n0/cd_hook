@@ -96,17 +96,17 @@ int main() {
     assert(0 == strcmp(out, "Whiskers slinks gracefully."));
 
     /* VMT HOOKS */
-    cd_hook_ctx* animal_sound_ctx = ch_create_ctx((void*)myAnimal, (void*)animal_sound_hook);
+    ch_hook_ctx* animal_sound_ctx = ch_create_ctx((void*)myAnimal, (void*)animal_sound_hook);
     ch_vmt(animal_sound_ctx, 2);
     myAnimal->sound();
     assert(0 == strcmp(out, "Bobo is hooked and makes a strange sound!"));
 
-    cd_hook_ctx* dog_sound_ctx = ch_create_ctx((void*)myDog, (void*)dog_sound_hook);
+    ch_hook_ctx* dog_sound_ctx = ch_create_ctx((void*)myDog, (void*)dog_sound_hook);
     ch_vmt(dog_sound_ctx, 2);
     myDog->sound();
     assert(0 == strcmp(out, "Buddy eats dog food, but it's a bit awkward."));
 
-    cd_hook_ctx* cat_move_ctx = ch_create_ctx((void*)myCat, (void*)cat_move_hook);
+    ch_hook_ctx* cat_move_ctx = ch_create_ctx((void*)myCat, (void*)cat_move_hook);
     ch_vmt(cat_move_ctx, 3);
     myCat->move();
     assert(0 == strcmp(out, "Whiskers is hooked and moves differently!"));

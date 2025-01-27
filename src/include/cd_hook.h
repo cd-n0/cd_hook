@@ -1,5 +1,5 @@
-#ifndef CD_HOOK_H
-#define CD_HOOK_H
+#ifndef CH_HOOK_H
+#define CH_HOOK_H
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -37,47 +37,47 @@ x86_64:
 
 #define JMP_ACC 0xff, 0xe0
 
-typedef enum cd_hook_type_e{
-    CD_HOOK_UNDEFINED = 0,
-    CD_HOOK_INLINE,
-    CD_HOOK_VMT
-} cd_hook_type;
+typedef enum ch_hook_type_e{
+    CH_HOOK_UNDEFINED = 0,
+    CH_HOOK_INLINE,
+    CH_HOOK_VMT
+} ch_hook_type;
 
-typedef enum cd_hook_errors_e{
-    CD_HOOK_OK = 0,
-    CD_HOOK_ERROR_ALREADY_HOOKED,
-    CD_HOOK_ERROR_WRONG_HOOK_METHOD,
-    CD_HOOK_ERROR_NOT_HOOKED,
-    CD_HOOK_ERROR_MEMORY_PROTECTION,
-    CD_HOOK_ERROR_UNDEFINED
-} cd_hook_errors;
+typedef enum ch_hook_errors_e{
+    CH_HOOK_OK = 0,
+    CH_HOOK_ERROR_ALREADY_HOOKED,
+    CH_HOOK_ERROR_WRONG_HOOK_METHOD,
+    CH_HOOK_ERROR_NOT_HOOKED,
+    CH_HOOK_ERROR_MEMORY_PROTECTION,
+    CH_HOOK_ERROR_UNDEFINED
+} ch_hook_errors;
 
-typedef struct cd_hook_ctx_s cd_hook_ctx;
+typedef struct ch_hook_ctx_s ch_hook_ctx;
 
 /* A quick way to call the original without messing up the hook. Since there's
  * no type checking and a way to get the return value, I still recommend the
 * manual  method */
 #define CH_CALL_ORIGINAL(CTX, FUNCTION_PROTOTYPE, ...) \
     switch((CTX)->type){\
-        case CD_HOOK_INLINE:\
+        case CH_HOOK_INLINE:\
             ch_inline(CTX, false);\
             ((FUNCTION_PROTOTYPE)(CTX)->original)(__VA_ARGS__);\
             ch_inline(CTX, true);\
             break;\
-        case CD_HOOK_UNDEFINED:\
+        case CH_HOOK_UNDEFINED:\
         default:\
             fprintf(stderr, "Not hooked or set to a non-existent hook method");\
     }
 
-const char *ch_util_status_to_string (const cd_hook_errors status);
-cd_hook_ctx *ch_create_ctx(void *to_hook, void *hook);
-cd_hook_errors ch_destroy_ctx(cd_hook_ctx *ctx, const bool unhook);
-cd_hook_errors ch_reinitialize_ctx(cd_hook_ctx *ctx, void *to_hook, void *hook);
-cd_hook_errors ch_unhook(cd_hook_ctx *ctx);
-cd_hook_errors ch_inline(cd_hook_ctx *ctx);
-cd_hook_errors ch_vmt(cd_hook_ctx *ctx, const size_t vmt_index);
+const char *ch_util_status_to_string (const ch_hook_errors status);
+ch_hook_ctx *ch_create_ctx(void *to_hook, void *hook);
+ch_hook_errors ch_destroy_ctx(ch_hook_ctx *ctx, const bool unhook);
+ch_hook_errors ch_reinitialize_ctx(ch_hook_ctx *ctx, void *to_hook, void *hook);
+ch_hook_errors ch_unhook(ch_hook_ctx *ctx);
+ch_hook_errors ch_inline(ch_hook_ctx *ctx);
+ch_hook_errors ch_vmt(ch_hook_ctx *ctx, const size_t vmt_index);
 
 #if defined(__cplusplus)
 }
 #endif
-#endif /* CD_HOOK_H */
+#endif /* CH_HOOK_H */

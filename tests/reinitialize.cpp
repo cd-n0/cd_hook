@@ -26,7 +26,7 @@ int main(){
     f1();
     assert(0 == strcmp(out, "f1"));
 
-    cd_hook_ctx *ctx = ch_create_ctx((void*)f1, (void*)f2);
+    ch_hook_ctx *ctx = ch_create_ctx((void*)f1, (void*)f2);
     ch_inline(ctx);
     f1();
     assert(0 == strcmp(out, "Hooked by f2"));
