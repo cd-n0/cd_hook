@@ -31,7 +31,7 @@ int main(){
     f1();
     assert(0 == strcmp(out, "Hooked by f2"));
 
-    ch_reinitialize_ctx(ctx, (void*)f1, (void*)f3);
+    ch_initialize_ctx(ctx, (void*)f1, (void*)f3);
     f1();
     assert(0 == strcmp(out, "f1"));
 

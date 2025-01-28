@@ -36,11 +36,11 @@ $(TESTBINDIR)/%: $(TESTOBJDIR)/%.o | $(TESTBINDIR) $(TARGET)
 	$(CXXC) $(CXXFLAGS) -o $@ $< $(TARGET) $(LDLIBS)
 
 # Run all tests
-test: $(TESTBINS)
+test: $(TESTBINS) | $(OBJS)
 	@echo "Running tests..."
 	@for test in $^; do \
 		echo "Running $$test..."; \
 		./$$test && echo "TEST $$test OK" || echo "TEST $$test FAIL"; \
 	done
 
-.PHONY: all debug test
+.PHONY: all clean test

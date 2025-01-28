@@ -1,7 +1,7 @@
 CC = gcc
 CXXC = g++
 CFLAGS = -std=c99 -Wall -Wextra -Wpedantic
-CXXFLAGS = -std=c++11 -Wall -Wextra -Wpedantic
+CXXFLAGS = -std=c++20 -Wall -Wextra -Wpedantic
 LDLIBS = 
 DEBUG_FLAGS = -ggdb
 RELEASE_FLAGS = -O2
@@ -23,8 +23,10 @@ TESTBINS = $(patsubst $(TESTOBJDIR)/%.o,$(TESTBINDIR)/%,$(TESTOBJS))
 BUILD ?= debug
 ifeq ($(BUILD), debug)
 	CFLAGS += $(DEBUG_FLAGS)
+	CXXFLAGS += $(DEBUG_FLAGS)
 else ifeq ($(BUILD), release)
 	CFLAGS += $(RELEASE_FLAGS)
+	CXXFLAGS += $(RELEASE_FLAGS)
 endif
 
 TARGET = libcdhook.a

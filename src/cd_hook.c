@@ -1,6 +1,5 @@
 #include "include/cd_hook.h"
 
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,18 +8,6 @@
 
 /* MASSIVE Credits to https://gist.github.com/dutc/991c14bc20ef5a1249c4 */
 static uint8_t jmp_bytes[] = {MOV_ACC, ADDRESS_PADDING, JMP_ACC};
-
-struct ch_hook_ctx_s {
-    union {
-        uint8_t old_bytes[INLINE_LENGTH];
-        uint16_t vmt_index;
-    } hook_data;
-    void *to_hook;
-    void *original;
-    void *hook;
-    ch_hook_type type;
-    bool hooked;
-};
 
 static bool _change_adress_write_protection(void *address, const bool allow_write){
     const int pagesize = sysconf(_SC_PAGE_SIZE);
@@ -133,7 +120,7 @@ static ch_hook_errors _ch_vmt_internal(ch_hook_ctx *ctx, const size_t vmt_index,
     return CH_HOOK_OK;
 }
 
-ch_hook_errors ch_reinitialize_ctx(ch_hook_ctx *ctx, void *to_hook, void *hook){
+ch_hook_errors ch_initialize_ctx(ch_hook_ctx *ctx, void *to_hook, void *hook){
     if (ctx->hooked) {
         ch_hook_errors e = ch_unhook(ctx);
         if (CH_HOOK_OK != e) return e;
