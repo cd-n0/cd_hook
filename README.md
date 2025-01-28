@@ -1,10 +1,16 @@
 # CD Hook
 
 CD Hook is a hooking library for C/C++
-There's an example located at `cd_hook/src/main.c`, and some tests at `tests`
+Tests are located in `tests` folder and they also serve as examples
 
 It currently supports:
 - Inline hooking
+- VMT (Virtual Method Table) hooking
+
+Planning to support:
+- Trampoline hooking
+- Shadow VMT hooking
+- Import Address Table (IAT) hooking
 
 ## Building example
 ```sh
