@@ -29,9 +29,9 @@ static bool _change_adress_write_protection(void *address, const bool allow_writ
     return true;
 }
 
-const char *ch_util_status_to_string (const ch_hook_errors status)
+const char *ch_error_to_string (const ch_hook_errors error)
 {
-    switch (status)
+    switch (error)
     {
         case CH_HOOK_OK:
             return "OK";

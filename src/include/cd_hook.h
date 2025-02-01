@@ -95,7 +95,7 @@ typedef struct {
  * @param status The status code to convert.
  * @return A string representation of the status.
  */
-const char *ch_util_status_to_string(const ch_hook_errors status);
+const char *ch_error_to_string(const ch_hook_errors error);
 
 /**
  * @brief Creates a hook context.
