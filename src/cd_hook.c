@@ -7,7 +7,7 @@
 #include <sys/mman.h>
 
 /* MASSIVE Credits to https://gist.github.com/dutc/991c14bc20ef5a1249c4 */
-static uint8_t jmp_bytes[] = {MOV_ACC, ADDRESS_PADDING, JMP_ACC};
+static const uint8_t jmp_bytes_format[] = {MOV_ACC, ADDRESS_PADDING, JMP_ACC};
 
 static inline bool _change_adress_write_protection(void *address, const bool allow_write){
     const int pagesize = sysconf(_SC_PAGE_SIZE);
@@ -68,7 +68,10 @@ static inline ch_hook_errors _ch_inline_internal(ch_hook_ctx *ctx, const bool ho
     if (!_change_adress_write_protection(ctx->original, true))
         return CH_HOOK_ERROR_MEMORY_PROTECTION;
 
+    /* TODO: There's probably a better way to do this */
     if(hook){
+        char jmp_bytes[sizeof(jmp_bytes_format)];
+        memcpy(jmp_bytes, jmp_bytes_format, sizeof(jmp_bytes_format));
         memcpy(&jmp_bytes[JUMP_ADDRESS_OFFSET], &ctx->hook, sizeof(void*));
         memcpy(ctx->hook_data.old_bytes, ctx->to_hook, sizeof(jmp_bytes));
         memcpy(ctx->to_hook, &jmp_bytes, sizeof(jmp_bytes));
@@ -76,7 +79,7 @@ static inline ch_hook_errors _ch_inline_internal(ch_hook_ctx *ctx, const bool ho
         ctx->hooked = true;
     }
     else {
-        memcpy(ctx->to_hook, ctx->hook_data.old_bytes, sizeof(jmp_bytes));
+        memcpy(ctx->to_hook, ctx->hook_data.old_bytes, sizeof(jmp_bytes_format));
         ctx->type = CH_HOOK_UNDEFINED;
         ctx->hooked = false;
     }
