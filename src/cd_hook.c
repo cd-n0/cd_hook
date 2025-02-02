@@ -9,7 +9,7 @@
 /* MASSIVE Credits to https://gist.github.com/dutc/991c14bc20ef5a1249c4 */
 static uint8_t jmp_bytes[] = {MOV_ACC, ADDRESS_PADDING, JMP_ACC};
 
-static bool _change_adress_write_protection(void *address, const bool allow_write){
+static inline bool _change_adress_write_protection(void *address, const bool allow_write){
     const int pagesize = sysconf(_SC_PAGE_SIZE);
     void *page = address;
     /* https://stackoverflow.com/a/22971450 */
@@ -49,7 +49,7 @@ const char *ch_error_to_string (const ch_hook_errors error)
     }
 }
 
-static ch_hook_errors _check_hook(const ch_hook_ctx *ctx, const bool hook, const ch_hook_type type){
+static inline ch_hook_errors _check_hook(const ch_hook_ctx *ctx, const bool hook, const ch_hook_type type){
     if (ctx->hooked){
         if (ctx->type == type){
             if(hook) return CH_HOOK_ERROR_ALREADY_HOOKED;
@@ -60,7 +60,7 @@ static ch_hook_errors _check_hook(const ch_hook_ctx *ctx, const bool hook, const
     return CH_HOOK_OK;
 }
 
-static ch_hook_errors _ch_inline_internal(ch_hook_ctx *ctx, const bool hook){
+static inline ch_hook_errors _ch_inline_internal(ch_hook_ctx *ctx, const bool hook){
     ch_hook_errors err = _check_hook(ctx, hook, CH_HOOK_INLINE);
     if(err != CH_HOOK_OK)
         return err;
@@ -88,7 +88,7 @@ static ch_hook_errors _ch_inline_internal(ch_hook_ctx *ctx, const bool hook){
     return CH_HOOK_OK;
 }
 
-static ch_hook_errors _ch_vmt_internal(ch_hook_ctx *ctx, const size_t vmt_index, const bool hook){
+static inline ch_hook_errors _ch_vmt_internal(ch_hook_ctx *ctx, const size_t vmt_index, const bool hook){
     ch_hook_errors err = _check_hook(ctx, hook, CH_HOOK_VMT);
     if(err != CH_HOOK_OK)
         return err;
