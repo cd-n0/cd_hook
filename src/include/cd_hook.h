@@ -151,26 +151,26 @@ ch_hook_errors ch_vmt(ch_hook_ctx *ctx, const size_t vmt_index);
  * @param ... The arguments to pass to the original function.
  * 
  * It's better to not use a macro like this but it's good to have for testing
- * debuggin etc.
+ * debugging etc. Works with C20+ C++20+ because of __VA_OPT__.
  */
-#if __cplusplus >= 202002L || __STDC_VERSION__ >= 202000
-#define CH_CALL_ORIGINAL(CTX, FUNCTION_PROTOTYPE __VA__OPT__(,) ...)              \
-    do {                                                            \
-        if ((CTX)->hooked) {                                        \
-            ch_hook_type t = (CTX)->type;                           \
-            ch_unhook(CTX);                                         \
-            ((FUNCTION_PROTOTYPE)((CTX)->original))(__VA_ARGS__);   \
-            switch (t) {                                            \
-                case CH_HOOK_INLINE:                                \
-                    ch_inline(CTX);                                 \
-                    break;                                          \
-                case CH_HOOK_VMT:                                   \
-                    ch_vmt(CTX, (CTX)->hook_data.vmt_index);        \
-                    break;                                          \
-                default:                                            \
-                    break;                                          \
-            }                                                       \
-        }                                                           \
+#if __cplusplus >= 202002L || __STDC_VERSION__ >= 202311L
+#define CH_CALL_ORIGINAL(CTX, FUNCTION_PROTOTYPE, ...)                        \
+    do {                                                                      \
+        if ((CTX)->hooked) {                                                  \
+            ch_hook_type t = (CTX)->type;                                     \
+            ch_unhook(CTX);                                                   \
+            ((FUNCTION_PROTOTYPE)((CTX)->original))(__VA_OPT__(__VA_ARGS__)); \
+            switch (t) {                                                      \
+                case CH_HOOK_INLINE:                                          \
+                    ch_inline(CTX);                                           \
+                    break;                                                    \
+                case CH_HOOK_VMT:                                             \
+                    ch_vmt(CTX, (CTX)->hook_data.vmt_index);                  \
+                    break;                                                    \
+                default:                                                      \
+                    break;                                                    \
+            }                                                                 \
+        }                                                                     \
     } while (0)
 #endif
 

@@ -1,4 +1,5 @@
 #include "../src/include/cd_hook.h"
+#include <cstdio>
 #include <cassert>
 #include <cstring>
 
@@ -15,6 +16,12 @@ void f1(void){
 
 void f2(void){
     strcpy(out, "Hooked by f2");
+}
+
+void f3(int32_t arg){
+    char buf[BUFSIZ];
+    sprintf(buf, "%d", arg);
+    strcpy(out, buf);
 }
 
 int main(void){
@@ -34,6 +41,22 @@ int main(void){
 
     f1();
     assert(0 == strcmp(out, "Hooked by f2"));
+
+    ch_initialize_ctx(&ctx, (void*)f3, (void*)f2);
+    f1();
+    assert(0 == strcmp(out, "f1"));
+
+    /* BEFORE HOOKING */
+    f3(3);
+    assert(0 == strcmp(out, "3"));
+
+    /* HOOKING */
+    ch_inline(&ctx);
+    f3(3);
+    assert(0 == strcmp(out, "Hooked by f2"));
+
+    CH_CALL_ORIGINAL(&ctx, void(*)(int32_t), 42);
+    assert(0 == strcmp(out, "42"));
 
     return 0;
 }
