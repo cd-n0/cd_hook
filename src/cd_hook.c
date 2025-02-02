@@ -36,16 +36,16 @@ const char *ch_error_to_string (const ch_hook_errors error)
         case CH_HOOK_OK:
             return "OK";
         case CH_HOOK_ERROR_ALREADY_HOOKED:
-            return "ERR: Already hooked";
+            return "Already hooked";
         case CH_HOOK_ERROR_WRONG_HOOK_METHOD:
-            return "ERR: Used wrong hooking method";
+            return "Used wrong hooking method";
         case CH_HOOK_ERROR_NOT_HOOKED:
-            return "ERR: Not hooked";
+            return "Not hooked";
         case CH_HOOK_ERROR_MEMORY_PROTECTION:
-            return "ERR: Couldn't change memory protection";
+            return "Couldn't change memory protection";
         case CH_HOOK_ERROR_UNDEFINED:
         default:
-            return "ERR: Undefined";
+            return "Undefined";
     }
 }
 
