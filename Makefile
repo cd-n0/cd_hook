@@ -32,7 +32,7 @@ $(TESTOBJDIR)/%.o: $(TESTDIR)/%.cpp | $(TESTOBJDIR)
 	$(CXXC) $(CXXFLAGS) -o $@ -c $<
 
 # Build test binaries from object files
-$(TESTBINDIR)/%: $(TESTOBJDIR)/%.o | $(TESTBINDIR) $(TARGET)
+$(TESTBINDIR)/%: $(TESTOBJDIR)/%.o $(TARGET) | $(TESTBINDIR)
 	$(CXXC) $(CXXFLAGS) -o $@ $< $(TARGET) $(LDLIBS)
 
 # Run all tests
