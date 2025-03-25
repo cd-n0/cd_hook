@@ -123,7 +123,16 @@ static inline ch_hook_errors _ch_vmt_internal(ch_hook_ctx *ctx, const size_t vmt
     return CH_HOOK_OK;
 }
 
-ch_hook_errors ch_initialize_ctx(ch_hook_ctx *ctx, void *to_hook, void *hook){
+void ch_initialize_ctx(ch_hook_ctx *ctx, void *to_hook, void *hook){
+    memset(ctx, 0, sizeof(*ctx));
+    if (ctx){
+        ctx->to_hook = to_hook; 
+        ctx->original = to_hook;
+        ctx->hook = hook;
+    }
+}
+
+ch_hook_errors ch_reinitialize_ctx(ch_hook_ctx *ctx, void *to_hook, void *hook){
     if (ctx->hooked) {
         ch_hook_errors e = ch_unhook(ctx);
         if (CH_HOOK_OK != e) return e;

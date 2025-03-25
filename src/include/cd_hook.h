@@ -120,7 +120,16 @@ ch_hook_errors ch_destroy_ctx(ch_hook_ctx *ctx, const bool unhook);
  * @param hook Pointer to the new hook function.
  * @return Status of the operation.
  */
-ch_hook_errors ch_initialize_ctx(ch_hook_ctx *ctx, void *to_hook, void *hook);
+ch_hook_errors ch_reinitialize_ctx(ch_hook_ctx *ctx, void *to_hook, void *hook);
+
+/**
+ * @brief Initializes a hook context.
+ * @param ctx The context to reinitialize.
+ * @param to_hook Pointer to the function or method to hook.
+ * @param hook Pointer to the hook function.
+ * @return Status of the operation.
+ */
+void ch_initialize_ctx(ch_hook_ctx *ctx, void *to_hook, void *hook);
 
 /**
  * @brief Restores a hook to it's original state before hooking.

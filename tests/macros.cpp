@@ -31,6 +31,7 @@ int main(void){
 
     /* HOOKING */
     ch_hook_ctx ctx;
+    memset(&ctx, 0, sizeof(ctx));
     ch_initialize_ctx(&ctx, (void*)f1, (void*)f2);
     ch_inline(&ctx);
     f1();
@@ -42,7 +43,7 @@ int main(void){
     f1();
     assert(0 == strcmp(out, "Hooked by f2"));
 
-    ch_initialize_ctx(&ctx, (void*)f3, (void*)f2);
+    ch_reinitialize_ctx(&ctx, (void*)f3, (void*)f2);
     f1();
     assert(0 == strcmp(out, "f1"));
 
