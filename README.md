@@ -16,12 +16,14 @@ Planning to support:
 ```sh
 git clone https://github.com/cd-n0/cd_hook.git
 cd cd_hook
-make BUILD=release
+cmake -B build -G Ninja && cmake --build <build_dir>
 ```
 
 ## Tests
+> [!CAUTION]
+> VMT hooking tests are unreliable due to the indexes of the methods being tied to the compiler used, and the version of that said compiler when compiling the test. Check the method index of the class with a decompiler like radare2/IDA/Ghidra/Binary Ninja etc. and modify accordingly before opening an issue.
 ```sh
-make test
+ctest --test-dir <build_dir>
 ```
 
 ## Usage

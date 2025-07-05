@@ -1,7 +1,8 @@
-# Objects
-obj/
+# VS
+.vs/
 
-# Binaries
-libcdhook.a
-tests/bin/
-tests/obj/
+# Assuming cmake -B build
+build/
+
+# ctest
+Testing/

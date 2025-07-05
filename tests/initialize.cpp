@@ -1,4 +1,5 @@
-#include "../src/include/cd_hook.h"
+#include "cd_hook.h"
+#include "test_common.h"
 #include <cassert>
 #include <cstring>
 
@@ -6,9 +7,9 @@
 
 static char out[BUFFER_SIZE];
 
-__attribute__((noinline)) void f1(void);
-__attribute__((noinline)) void f2(void);
-__attribute__((noinline)) void f3(void);
+NO_INLINE void f1(void);
+NO_INLINE void f2(void);
+NO_INLINE void f3(void);
 
 void f1(void){
     strcpy(out, "f1");

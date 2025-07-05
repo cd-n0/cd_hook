@@ -1,15 +1,20 @@
-#include "include/cd_hook.h"
+#include "cd_hook.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __linux__
 #include <unistd.h>
 #include <sys/mman.h>
+#elif _WIN32
+#include <Windows.h>
+#endif
 
 /* MASSIVE Credits to https://gist.github.com/dutc/991c14bc20ef5a1249c4 */
 static const uint8_t jmp_bytes_format[] = {MOV_ACC, ADDRESS_PADDING, JMP_ACC};
 
 static inline bool _change_adress_write_protection(void *address, const bool allow_write){
+#ifdef __linux__
     const int pagesize = sysconf(_SC_PAGE_SIZE);
     void *page = address;
     /* https://stackoverflow.com/a/22971450 */
@@ -27,6 +32,12 @@ static inline bool _change_adress_write_protection(void *address, const bool all
     }
 
     return true;
+#elif _WIN32
+    DWORD old_protection;
+    DWORD new_protection = allow_write ? PAGE_EXECUTE_READWRITE : PAGE_EXECUTE_READ;
+    VirtualProtect(address, sizeof(jmp_bytes_format), new_protection, &old_protection);
+    //TODO: Currently the longest one to write is inline but this should probably be an argument or some other constant instead
+#endif
 }
 
 const char *ch_error_to_string (const ch_hook_errors error)

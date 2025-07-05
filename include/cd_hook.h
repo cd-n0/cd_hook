@@ -21,12 +21,12 @@ extern "C" {
  * @brief Constants for instruction injection depending on the architecture.
  * @{
  */
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(_M_X64)
 #define MOV_ACC 0x48, 0xB8 ///< x86_64: MOV instruction opcode for setting the accumulator register.
 #define JUMP_ADDRESS_OFFSET 2 ///< Offset of jump address in jmp_bytes array for x86_64.
 #define ADDRESS_PADDING 0, 0, 0, 0, 0, 0, 0, 0 ///< Padding for jump address.
 #define INLINE_LENGTH 12 ///< Length of inline hook instructions for x86_64.
-#elif __i386__
+#elif defined(__i386__) || defined(_M_IX86)
 #define MOV_ACC 0xB8 ///< i386: MOV instruction opcode for setting the accumulator register.
 #define JUMP_ADDRESS_OFFSET 1 ///< Offset of jump address in jmp_bytes array for i386.
 #define ADDRESS_PADDING 0, 0, 0, 0 ///< Padding for jump address.
@@ -181,6 +181,8 @@ ch_hook_errors ch_vmt(ch_hook_ctx *ctx, const size_t vmt_index);
             }                                                                 \
         }                                                                     \
     } while (0)
+#else
+#define CH_CALL_ORIGINAL(CTX, FUNCTION_PROTOTYPE, ...) static_assert(false, "Variable arguments isn't supported by your compiler/standard")
 #endif
 
 
